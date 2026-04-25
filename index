@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chimneystone Pool and Tennis Court Access</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 16px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 480px;
+    }
+    h2 { color: #1a202c; margin-bottom: 6px; font-size: 1.5rem; }
+    .subtitle { color: #718096; font-size: 0.9rem; margin-bottom: 28px; }
+    label { display: block; font-weight: 600; color: #2d3748; margin-bottom: 6px; font-size: 0.9rem; }
+    input, select {
+      width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e0;
+      border-radius: 8px; font-size: 0.95rem; color: #2d3748;
+      transition: border-color 0.2s; background: #fff;
+    }
+    input:focus, select:focus { outline: none; border-color: #4299e1; }
+    .field { margin-bottom: 20px; }
+
+    .radio-group { display: flex; gap: 12px; margin-top: 4px; }
+    .radio-option {
+      flex: 1; border: 1.5px solid #cbd5e0; border-radius: 8px;
+      padding: 10px 14px; cursor: pointer; text-align: center;
+      font-size: 0.95rem; color: #2d3748; transition: all 0.2s;
+      user-select: none;
+    }
+    .radio-option:hover { border-color: #4299e1; background: #ebf8ff; }
+    .radio-option.selected { border-color: #4299e1; background: #ebf8ff; color: #2b6cb0; font-weight: 600; }
+    .radio-option input { display: none; }
+
+    #tenantFields { display: none; }
+    #additionalMemberFields { display: none; }
+
+    .upload-area {
+      border: 2px dashed #cbd5e0; border-radius: 8px;
+      padding: 24px; text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .upload-area:hover { border-color: #4299e1; background: #ebf8ff; }
+    .upload-area.has-file { border-color: #48bb78; background: #f0fff4; }
+    .upload-area.upload-error { border-color: #fc8181; background: #fff5f5; }
+    .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+    .upload-text { color: #718096; font-size: 0.88rem; }
+    .upload-label { color: #2d3748; font-size: 0.88rem; font-weight: 500; margin-bottom: 4px; }
+    .upload-text strong { color: #4299e1; }
+    #fileInput { display: none; }
+    #preview { max-width: 100%; max-height: 160px; border-radius: 8px; margin-top: 12px; display: none; }
+    .upload-required { color: #e53e3e; font-size: 0.82rem; margin-top: 6px; display: none; }
+
+    .section-label {
+      font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #a0aec0; margin-bottom: 16px;
+    }
+    .divider { border: none; border-top: 1.5px solid #e2e8f0; margin: 24px 0; }
+
+    button[type="submit"] {
+      width: 100%; padding: 13px; background: #4299e1; color: white;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s; margin-top: 8px;
+    }
+    button[type="submit"]:hover { background: #3182ce; }
+    button[type="submit"]:disabled { background: #a0aec0; cursor: not-allowed; }
+
+    #result {
+      display: none; border-radius: 10px; padding: 24px;
+      text-align: center; margin-top: 24px;
+      animation: fadeIn 0.4s ease;
+    }
+    #result.qualified { background: #f0fff4; border: 2px solid #48bb78; }
+    #result.not-qualified { background: #fff5f5; border: 2px solid #fc8181; }
+    #result.violations { background: #fffaf0; border: 2px solid #ed8936; }
+    .result-icon { font-size: 2.8rem; margin-bottom: 8px; }
+    .result-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+    .result-title.qualified { color: #276749; }
+    .result-title.not-qualified { color: #9b2c2c; }
+    .result-title.violations { color: #7b341e; }
+    .result-msg { color: #4a5568; font-size: 0.92rem; line-height: 1.5; }
+
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 3px solid rgba(255,255,255,0.4);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.7s linear infinite; vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h2>Chimneystone Pool and Tennis Court Access</h2>
+  <p class="subtitle">Complete the form for your community pass.</p>
+
+  <div class="section-label">Your Information</div>
+  <div class="field">
+    <label for="name">Full Name</label>
+    <input type="text" id="name" placeholder="Jane Smith" required>
+  </div>
+  <div class="field">
+    <label for="email">Email Address</label>
+    <input type="email" id="email" placeholder="jane@example.com" required>
+  </div>
+  <div class="field">
+    <label for="phone">Cell Phone Number</label>
+    <input type="tel" id="phone" placeholder="(555) 555-5555" required>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">Address</div>
+  <div class="field">
+    <label for="address">Select Your Address</label>
+    <select id="address" required>
+      <option value="">Loading addresses...</option>
+    </select>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">Residency Status</div>
+  <div class="field">
+    <label>Are you an Owner or Tenant?</label>
+    <div class="radio-group">
+      <label class="radio-option" id="ownerOption" onclick="selectOwnerRenter('Owner')">
+        <input type="radio" name="ownerRenter" value="Owner"> 🏠 Owner
+      </label>
+      <label class="radio-option" id="renterOption" onclick="selectOwnerRenter('Tenant')">
+        <input type="radio" name="ownerRenter" value="Tenant"> 🔑 Tenant
+      </label>
+    </div>
+  </div>
+
+  <div id="tenantFields">
+    <div class="field">
+      <label for="landlordName">Landlord's Full Name</label>
+      <input type="text" id="landlordName" placeholder="John Doe">
+    </div>
+    <div class="field">
+      <label for="landlordAddress">Landlord's Address</label>
+      <input type="text" id="landlordAddress" placeholder="123 Main St, City, TX 77000">
+    </div>
+    <div class="field">
+      <label for="landlordPhone">Landlord's Phone Number</label>
+      <input type="tel" id="landlordPhone" placeholder="(555) 555-5555">
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">Household Members</div>
+  <div class="field">
+    <label for="additionalMembers">Additional Members in Household Requesting a Pass</label>
+    <select id="additionalMembers" onchange="toggleAdditionalMember()">
+      <option value="0">None</option>
+      <option value="1">1 Additional Member</option>
+    </select>
+  </div>
+
+  <div id="additionalMemberFields">
+    <div class="field">
+      <label for="additionalMemberName">Additional Member's Full Name</label>
+      <input type="text" id="additionalMemberName" placeholder="John Smith">
+    </div>
+    <div class="field">
+      <label for="additionalMemberPhone">Additional Member's Cell Phone</label>
+      <input type="tel" id="additionalMemberPhone" placeholder="(555) 555-5555">
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="field">
+    <label>Photo ID or Proof of Residency <span style="color:#e53e3e">*</span></label>
+    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+      <div class="upload-icon">📷</div>
+      <div class="upload-label">Take photo of the front of your ID or proof of residency (e.g., recent utility bill)</div>
+      <div class="upload-text" style="margin-top:6px"><strong>Click to upload</strong> or drag & drop</div>
+      <div class="upload-text">JPG, PNG, GIF up to 10MB</div>
+      <img id="preview" alt="Preview">
+    </div>
+    <div class="upload-required" id="uploadRequired">⚠ A photo is required to submit the form.</div>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <button type="submit" id="submitBtn" onclick="handleSubmit()">Submit Form</button>
+
+  <div id="result">
+    <div class="result-icon" id="resultIcon"></div>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-msg" id="resultMsg"></div>
+  </div>
+</div>
+
+<script>
+  // *** PASTE YOUR APPS SCRIPT DEPLOYMENT URL HERE ***
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyBrzZwYGW9bIKkB2uCbvN9iDLyyKJL7x_3xNa9mroEsaL9GuUdcoCSlaEi_zNAXxGsQ/exec";
+  const SECRET_TOKEN = "chimney2026secure"; // Must exactly match Code.gs
+
+  // Load addresses on page load
+  fetch(SCRIPT_URL + "?t=" + Date.now(), { redirect: "follow" })
+    .then(res => res.json())
+    .then(data => {
+      const sel = document.getElementById("address");
+      sel.innerHTML = '<option value="">-- Select your address --</option>';
+      data.addresses.forEach(function(a) {
+        const opt = document.createElement("option");
+        opt.value = a;
+        opt.textContent = a;
+        sel.appendChild(opt);
+      });
+    })
+    .catch(function() {
+      document.getElementById("address").innerHTML = '<option value="">Error loading addresses</option>';
+    });
+
+  // Owner / Tenant toggle
+  let ownerRenterValue = null;
+  function selectOwnerRenter(val) {
+    ownerRenterValue = val;
+    document.getElementById("ownerOption").classList.toggle("selected", val === "Owner");
+    document.getElementById("renterOption").classList.toggle("selected", val === "Tenant");
+    document.getElementById("tenantFields").style.display = val === "Tenant" ? "block" : "none";
+    if (val === "Owner") {
+      document.getElementById("landlordName").value = "";
+      document.getElementById("landlordAddress").value = "";
+      document.getElementById("landlordPhone").value = "";
+    }
+  }
+
+  // Additional household member toggle
+  function toggleAdditionalMember() {
+    const val = document.getElementById("additionalMembers").value;
+    document.getElementById("additionalMemberFields").style.display = val === "1" ? "block" : "none";
+    if (val === "0") {
+      document.getElementById("additionalMemberName").value = "";
+      document.getElementById("additionalMemberPhone").value = "";
+    }
+  }
+
+  // Photo upload
+  const fileInput = document.getElementById("fileInput");
+  const uploadArea = document.getElementById("uploadArea");
+  const preview = document.getElementById("preview");
+  let photoData = null, photoName = null, photoMime = null;
+
+  fileInput.addEventListener("change", function() {
+    const file = this.files[0];
+    if (!file) return;
+    photoName = file.name;
+    photoMime = file.type;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      photoData = e.target.result.split(",")[1];
+      preview.src = e.target.result;
+      preview.style.display = "block";
+      uploadArea.classList.add("has-file");
+      uploadArea.classList.remove("upload-error");
+      uploadArea.querySelector(".upload-text").innerHTML = "<strong>" + file.name + "</strong>";
+      document.getElementById("uploadRequired").style.display = "none";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  uploadArea.addEventListener("dragover", function(e) { e.preventDefault(); });
+  uploadArea.addEventListener("drop", function(e) {
+    e.preventDefault();
+    fileInput.files = e.dataTransfer.files;
+    fileInput.dispatchEvent(new Event("change"));
+  });
+
+  // Submit
+  function handleSubmit() {
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const address = document.getElementById("address").value;
+    const additionalCount = document.getElementById("additionalMembers").value;
+    const additionalMemberName = document.getElementById("additionalMemberName").value.trim();
+    const additionalMemberPhone = document.getElementById("additionalMemberPhone").value.trim();
+    const landlordName = document.getElementById("landlordName").value.trim();
+    const landlordAddress = document.getElementById("landlordAddress").value.trim();
+    const landlordPhone = document.getElementById("landlordPhone").value.trim();
+
+    if (!name || !email || !phone || !address) {
+      alert("Please fill out all required fields.");
+      return;
+    }
+    if (!ownerRenterValue) {
+      alert("Please select whether you are an Owner or Tenant.");
+      return;
+    }
+    if (ownerRenterValue === "Tenant" && (!landlordName || !landlordAddress || !landlordPhone)) {
+      alert("Please fill out all landlord information.");
+      return;
+    }
+    if (additionalCount === "1" && (!additionalMemberName || !additionalMemberPhone)) {
+      alert("Please fill out the additional household member's name and phone number.");
+      return;
+    }
+    if (!photoData) {
+      uploadArea.classList.add("upload-error");
+      document.getElementById("uploadRequired").style.display = "block";
+      uploadArea.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    const btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Submitting...';
+    document.getElementById("result").style.display = "none";
+
+    const formData = {
+      token: SECRET_TOKEN,
+      name, email, phone, address,
+      ownerRenter: ownerRenterValue,
+      landlordName, landlordAddress, landlordPhone,
+      additionalMemberName: additionalCount === "1" ? additionalMemberName : "",
+      additionalMemberPhone: additionalCount === "1" ? additionalMemberPhone : "",
+      photoData, photoName, photoMime
+    };
+
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(formData),
+      redirect: "follow"
+    })
+    .then(res => res.json())
+    .then(function(res) {
+      btn.disabled = false;
+      btn.innerHTML = "Submit Form";
+      if (res.duplicate) { showDuplicate(); return; }
+      if (!res.success) { alert("Something went wrong: " + res.error); return; }
+      showResult(res.qualified, res.hasViolations);
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.innerHTML = "Submit Form";
+      alert("Submission error. Please try again.");
+    });
+  }
+
+  function showResult(qualified, hasViolations) {
+    const resultDiv = document.getElementById("result");
+    const icon = document.getElementById("resultIcon");
+    const title = document.getElementById("resultTitle");
+    const msg = document.getElementById("resultMsg");
+
+
+    if (hasViolations) {
+      resultDiv.className = "violations";
+      icon.textContent = "⚠️";
+      title.className = "result-title violations";
+      title.textContent = "Not Eligible — Open Violations";
+      msg.textContent = "Your address is not eligible for a pool and tennis court pass due to open violations. Please reach out to the community manager for more information.";
+    } else if (qualified) {
+      resultDiv.className = "qualified";
+      icon.textContent = "✅";
+      title.className = "result-title qualified";
+      title.textContent = "Thank You!";
+      msg.textContent = "You will receive an email with instructions on how to gain access to the pool and tennis courts from an app on your phone for free or a fob for an additional cost.";
+    } else {
+      resultDiv.className = "not-qualified";
+      icon.textContent = "❌";
+      title.className = "result-title not-qualified";
+      title.textContent = "Not Qualified";
+      msg.textContent = "Unfortunately, your address does not qualify for a pool and tennis court pass at this time.";
+    }
+
+    resultDiv.style.display = "block";
+    resultDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function showDuplicate() {
+    const resultDiv = document.getElementById("result");
+    document.getElementById("resultIcon").textContent = "🚫";
+    const title = document.getElementById("resultTitle");
+    title.className = "result-title not-qualified";
+    title.textContent = "Already Submitted";
+    document.getElementById("resultMsg").textContent = "An access request has already been made for this address. Please contact the community manager if you believe this is an error.";
+    resultDiv.className = "not-qualified";
+    resultDiv.style.display = "block";
+    resultDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+</script>
+</body>
+</html>
