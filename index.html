@@ -8,23 +8,50 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f0f4f8;
+      min-height: 100vh;
+      padding: 40px 16px;
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      min-height: 100vh;
-      padding: 40px 16px;
+      position: relative;
     }
+
+    /* Background image with warm color overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-image: url('pool.jpg');
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.85) saturate(1.3) sepia(0.15);
+      z-index: 0;
+    }
+
+    /* Soft warm overlay on top of image */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(10, 40, 80, 0.45);
+      z-index: 1;
+    }
+
     .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      background: rgba(255, 255, 255, 0.94);
+      border-radius: 14px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
       padding: 40px 36px;
       width: 100%;
       max-width: 480px;
+      position: relative;
+      z-index: 2;
+      backdrop-filter: blur(2px);
     }
     h2 { color: #1a202c; margin-bottom: 6px; font-size: 1.5rem; }
-    .subtitle { color: #718096; font-size: 0.9rem; margin-bottom: 28px; }
+    .subtitle { color: #718096; font-size: 0.9rem; margin-bottom: 28px; line-height: 1.5; }
     label { display: block; font-weight: 600; color: #2d3748; margin-bottom: 6px; font-size: 0.9rem; }
     input, select {
       width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e0;
@@ -167,6 +194,22 @@
 
   <div class="section-label">Household Members</div>
   <div class="field">
+    <label for="householdCount">How many members are in your household?</label>
+    <select id="householdCount" required>
+      <option value="">-- Select --</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10</option>
+    </select>
+  </div>
+  <div class="field">
     <label for="additionalMembers">Additional Members in Household Requesting a Pass</label>
     <select id="additionalMembers" onchange="toggleAdditionalMember()">
       <option value="0">None</option>
@@ -210,11 +253,9 @@
 </div>
 
 <script>
-  // *** PASTE YOUR APPS SCRIPT DEPLOYMENT URL HERE ***
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyBrzZwYGW9bIKkB2uCbvN9iDLyyKJL7x_3xNa9mroEsaL9GuUdcoCSlaEi_zNAXxGsQ/exec";
-  const SECRET_TOKEN = "chimney2026secure"; // Must exactly match Code.gs
+  const SECRET_TOKEN = "chimney2026secure";
 
-  // Load addresses on page load
   fetch(SCRIPT_URL + "?t=" + Date.now(), { redirect: "follow" })
     .then(res => res.json())
     .then(data => {
@@ -231,7 +272,6 @@
       document.getElementById("address").innerHTML = '<option value="">Error loading addresses</option>';
     });
 
-  // Owner / Tenant toggle
   let ownerRenterValue = null;
   function selectOwnerRenter(val) {
     ownerRenterValue = val;
@@ -245,7 +285,6 @@
     }
   }
 
-  // Additional household member toggle
   function toggleAdditionalMember() {
     const val = document.getElementById("additionalMembers").value;
     document.getElementById("additionalMemberFields").style.display = val === "1" ? "block" : "none";
@@ -255,7 +294,6 @@
     }
   }
 
-  // Photo upload
   const fileInput = document.getElementById("fileInput");
   const uploadArea = document.getElementById("uploadArea");
   const preview = document.getElementById("preview");
@@ -286,12 +324,12 @@
     fileInput.dispatchEvent(new Event("change"));
   });
 
-  // Submit
   function handleSubmit() {
     const name = document.getElementById("name").value.trim();
     const email = document.getElementById("email").value.trim();
     const phone = document.getElementById("phone").value.trim();
     const address = document.getElementById("address").value;
+    const householdCount = document.getElementById("householdCount").value;
     const additionalCount = document.getElementById("additionalMembers").value;
     const additionalMemberName = document.getElementById("additionalMemberName").value.trim();
     const additionalMemberPhone = document.getElementById("additionalMemberPhone").value.trim();
@@ -309,6 +347,10 @@
     }
     if (ownerRenterValue === "Tenant" && (!landlordName || !landlordAddress || !landlordPhone)) {
       alert("Please fill out all landlord information.");
+      return;
+    }
+    if (!householdCount) {
+      alert("Please select the number of members in your household.");
       return;
     }
     if (additionalCount === "1" && (!additionalMemberName || !additionalMemberPhone)) {
@@ -330,6 +372,7 @@
     const formData = {
       token: SECRET_TOKEN,
       name, email, phone, address,
+      householdCount,
       ownerRenter: ownerRenterValue,
       landlordName, landlordAddress, landlordPhone,
       additionalMemberName: additionalCount === "1" ? additionalMemberName : "",
@@ -363,7 +406,6 @@
     const icon = document.getElementById("resultIcon");
     const title = document.getElementById("resultTitle");
     const msg = document.getElementById("resultMsg");
-
 
     if (hasViolations) {
       resultDiv.className = "violations";
