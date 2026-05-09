@@ -15,21 +15,17 @@
       align-items: flex-start;
       position: relative;
     }
-
-    /* Background image with warm color overlay */
     body::before {
       content: '';
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background-image: url('pool.png');
+      background-image: url('pool.jpg');
       background-size: cover;
       background-position: center;
       filter: brightness(0.85) saturate(1.3) sepia(0.15);
       z-index: 0;
     }
-
-    /* Soft warm overlay on top of image */
     body::after {
       content: '';
       position: fixed;
@@ -38,7 +34,6 @@
       background: rgba(10, 40, 80, 0.45);
       z-index: 1;
     }
-
     .card {
       background: rgba(255, 255, 255, 0.94);
       border-radius: 14px;
@@ -71,6 +66,9 @@
     .radio-option:hover { border-color: #4299e1; background: #ebf8ff; }
     .radio-option.selected { border-color: #4299e1; background: #ebf8ff; color: #2b6cb0; font-weight: 600; }
     .radio-option input { display: none; }
+    .radio-sublabel {
+      font-size: 0.78rem; font-weight: 400; color: #718096; margin-top: 3px;
+    }
 
     #tenantFields { display: none; }
     #additionalMemberFields { display: none; }
@@ -194,7 +192,7 @@
 
   <div class="section-label">Household Members</div>
   <div class="field">
-    <label for="householdCount">How Many Members Are In Your Household?</label>
+    <label for="householdCount">How many members are in your household?</label>
     <select id="householdCount" required>
       <option value="">-- Select --</option>
       <option value="1">1</option>
@@ -225,6 +223,25 @@
     <div class="field">
       <label for="additionalMemberPhone">Additional Member's Cell Phone</label>
       <input type="tel" id="additionalMemberPhone" placeholder="(555) 555-5555">
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">Access Method</div>
+  <div class="field">
+    <label>How would you like to access the pool and tennis courts?</label>
+    <div class="radio-group">
+      <label class="radio-option" id="appOption" onclick="selectAccessMethod('Phone App')">
+        <input type="radio" name="accessMethod" value="Phone App">
+        📱 Phone App
+        <div class="radio-sublabel">Free</div>
+      </label>
+      <label class="radio-option" id="fobOption" onclick="selectAccessMethod('Key Fob')">
+        <input type="radio" name="accessMethod" value="Key Fob">
+        🔑 Key Fob
+        <div class="radio-sublabel">$5.00</div>
+      </label>
     </div>
   </div>
 
@@ -283,6 +300,13 @@
       document.getElementById("landlordAddress").value = "";
       document.getElementById("landlordPhone").value = "";
     }
+  }
+
+  let accessMethodValue = null;
+  function selectAccessMethod(val) {
+    accessMethodValue = val;
+    document.getElementById("appOption").classList.toggle("selected", val === "Phone App");
+    document.getElementById("fobOption").classList.toggle("selected", val === "Key Fob");
   }
 
   function toggleAdditionalMember() {
@@ -357,6 +381,10 @@
       alert("Please fill out the additional household member's name and phone number.");
       return;
     }
+    if (!accessMethodValue) {
+      alert("Please select your preferred access method.");
+      return;
+    }
     if (!photoData) {
       uploadArea.classList.add("upload-error");
       document.getElementById("uploadRequired").style.display = "block";
@@ -377,6 +405,7 @@
       landlordName, landlordAddress, landlordPhone,
       additionalMemberName: additionalCount === "1" ? additionalMemberName : "",
       additionalMemberPhone: additionalCount === "1" ? additionalMemberPhone : "",
+      accessMethod: accessMethodValue,
       photoData, photoName, photoMime
     };
 
